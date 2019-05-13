@@ -20,10 +20,9 @@
 class HelloWorldStateMachine : public dragonboat::StateMachine {
  public:
   HelloWorldStateMachine(uint64_t clusterID, uint64_t nodeID) noexcept
-      : StateMachine(clusterID, nodeID)
+      : StateMachine(clusterID, nodeID), update_count_(0)
   {}
-  ~HelloWorldStateMachine()
-  {}
+  ~HelloWorldStateMachine() noexcept override = default;
  protected:
   uint64_t update(const dragonboat::Byte *data, size_t size) noexcept override;
   LookupResult lookup(

@@ -42,7 +42,8 @@ SnapshotResult HelloWorldStateMachine::saveSnapshot(
   r.error = SNAPSHOT_OK;
   r.size = 0;
   ret = writer->Write(
-      reinterpret_cast<const dragonboat::Byte *>(&update_count_), sizeof(int));
+      reinterpret_cast<const dragonboat::Byte *>(&update_count_),
+      sizeof(int));
   if (ret.size != sizeof(int)) {
     r.error = FAILED_TO_SAVE_SNAPSHOT;
     return r;
