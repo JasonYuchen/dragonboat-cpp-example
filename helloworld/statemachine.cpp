@@ -7,8 +7,8 @@
 #include "statemachine.h"
 
 uint64_t HelloWorldStateMachine::update(
-    const dragonboat::Byte *data,
-    size_t size) noexcept
+  const dragonboat::Byte *data,
+  size_t size) noexcept
 {
   auto c = reinterpret_cast<const char *>(data);
   std::cout << "message: " << std::string(c, size) << std::endl;
@@ -17,8 +17,8 @@ uint64_t HelloWorldStateMachine::update(
 }
 
 LookupResult HelloWorldStateMachine::lookup(
-    const dragonboat::Byte *data,
-    size_t size) const noexcept
+  const dragonboat::Byte *data,
+  size_t size) const noexcept
 {
   LookupResult r;
   r.result = new char[sizeof(int)];
@@ -33,17 +33,17 @@ uint64_t HelloWorldStateMachine::getHash() const noexcept
 }
 
 SnapshotResult HelloWorldStateMachine::saveSnapshot(
-    dragonboat::SnapshotWriter *writer,
-    dragonboat::SnapshotFileCollection *collection,
-    const dragonboat::DoneChan &done) const noexcept
+  dragonboat::SnapshotWriter *writer,
+  dragonboat::SnapshotFileCollection *collection,
+  const dragonboat::DoneChan &done) const noexcept
 {
   SnapshotResult r;
   dragonboat::IOResult ret;
   r.error = SNAPSHOT_OK;
   r.size = 0;
   ret = writer->Write(
-      reinterpret_cast<const dragonboat::Byte *>(&update_count_),
-      sizeof(int));
+    reinterpret_cast<const dragonboat::Byte *>(&update_count_),
+    sizeof(int));
   if (ret.size != sizeof(int)) {
     r.error = FAILED_TO_SAVE_SNAPSHOT;
     return r;
@@ -53,9 +53,9 @@ SnapshotResult HelloWorldStateMachine::saveSnapshot(
 }
 
 int HelloWorldStateMachine::recoverFromSnapshot(
-    dragonboat::SnapshotReader *reader,
-    const std::vector<dragonboat::SnapshotFile> &files,
-    const dragonboat::DoneChan &done) noexcept
+  dragonboat::SnapshotReader *reader,
+  const std::vector<dragonboat::SnapshotFile> &files,
+  const dragonboat::DoneChan &done) noexcept
 {
   dragonboat::IOResult ret;
   dragonboat::Byte data[sizeof(int)];
@@ -73,8 +73,8 @@ void HelloWorldStateMachine::freeLookupResult(LookupResult r) noexcept
 }
 
 CPPStateMachine *createDragonboatStateMachine(
-    uint64_t clusterID,
-    uint64_t nodeID)
+  uint64_t clusterID,
+  uint64_t nodeID)
 {
   auto cppsm = new CPPStateMachine;
   cppsm->sm = new HelloWorldStateMachine(clusterID, nodeID);
