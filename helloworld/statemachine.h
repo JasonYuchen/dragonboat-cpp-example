@@ -19,23 +19,33 @@
 // See statemachine.h for more details about the StateMachine interface.
 class HelloWorldStateMachine : public dragonboat::StateMachine {
  public:
-  HelloWorldStateMachine(uint64_t clusterID, uint64_t nodeID) noexcept;
-  ~HelloWorldStateMachine();
+  HelloWorldStateMachine(uint64_t clusterID, uint64_t nodeID) noexcept
+      : StateMachine(clusterID, nodeID)
+  {}
+  ~HelloWorldStateMachine()
+  {}
  protected:
   uint64_t update(const dragonboat::Byte *data, size_t size) noexcept override;
-  LookupResult lookup(const dragonboat::Byte *data,
-                      size_t size) const noexcept override;
+  LookupResult lookup(
+      const dragonboat::Byte *data,
+      size_t size) const noexcept override;
   uint64_t getHash() const noexcept override;
-  SnapshotResult saveSnapshot(dragonboat::SnapshotWriter *writer,
-                              dragonboat::SnapshotFileCollection *collection,
-                              const dragonboat::DoneChan &done) const noexcept override;
-  int recoverFromSnapshot(dragonboat::SnapshotReader *reader,
-                          const std::vector<dragonboat::SnapshotFile> &files,
-                          const dragonboat::DoneChan &done) noexcept override;
+  SnapshotResult saveSnapshot(
+      dragonboat::SnapshotWriter *writer,
+      dragonboat::SnapshotFileCollection *collection,
+      const dragonboat::DoneChan &done) const noexcept override;
+  int recoverFromSnapshot(
+      dragonboat::SnapshotReader *reader,
+      const std::vector<dragonboat::SnapshotFile> &files,
+      const dragonboat::DoneChan &done) noexcept override;
   void freeLookupResult(LookupResult r) noexcept override;
  private:
   DISALLOW_COPY_MOVE_AND_ASSIGN(HelloWorldStateMachine);
   int update_count_;
 };
+
+CPPStateMachine *createDragonboatStateMachine(
+    uint64_t clusterID,
+    uint64_t nodeID);
 
 #endif //DRAGONBOAT_CPP_EXAMPLE_STATEMACHINE_H
