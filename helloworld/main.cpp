@@ -1,3 +1,4 @@
+#include <getopt.h>
 #include <iostream>
 #include <sstream>
 #include <memory>
@@ -16,16 +17,36 @@ constexpr char addresses[3][16] = {
 
 int main(int argc, char **argv, char **env)
 {
-  uint64_t nodeID;
-  if (argc == 2) {
-    nodeID = std::stoi(argv[1]);
-    if (nodeID > 3 || nodeID < 1) {
-      std::cerr << "invalid node id: " << nodeID << std::endl;
-      return -1;
+  int ret;
+  uint64_t nodeID = 0;
+  bool join = false;
+  std::string address;
+  struct ::option opts[] = {
+    {"nodeid", required_argument, nullptr, 0},
+    {"addr", required_argument, nullptr, 1},
+    {"join", no_argument, nullptr, 2},
+  };
+
+  while ((ret = getopt_long_only(argc, argv, "", opts, nullptr)) != -1) {
+    switch (ret) {
+      case 0:nodeID = std::stoull(optarg);
+        break;
+      case 1:address = optarg;
+        break;
+      case 2:join = true;
+        break;
+      default:std::cerr << "unknown ret " << ret << std::endl;
     }
-  } else {
-    std::cerr << "Usage: helloworld nodeID" << std::endl;
+  }
+
+  if (nodeID < 1) {
+    std::cerr << "invalid node id: " << nodeID << std::endl;
     return -1;
+  } else if (nodeID > 3 && address.empty()) {
+    std::cerr << "undefined node address" << std::endl;
+    return -1;
+  } else if (nodeID <= 3) {
+    address = addresses[nodeID + 1];
   }
 
   dragonboat::Config config(defaultClusterID, nodeID);
@@ -36,20 +57,22 @@ int main(int argc, char **argv, char **env)
   config.CompactionOverhead = 5;
 
   dragonboat::Peers peers;
-  for (auto idx = 0; idx < 3; ++idx) {
-    peers.AddMember(addresses[idx], idx + 1);
+  if (!join) {
+    for (auto idx = 0; idx < 3; ++idx) {
+      peers.AddMember(addresses[idx], idx + 1);
+    }
   }
 
   std::stringstream path;
   path << "example-data/helloworld-data/node" << nodeID;
   dragonboat::NodeHostConfig nhconfig(path.str(), path.str());
   nhconfig.RTTMillisecond = dragonboat::Milliseconds(200);
-  nhconfig.RaftAddress = addresses[nodeID - 1];
+  nhconfig.RaftAddress = address;
   nhconfig.APIAddress = "";
 
   dragonboat::Status status;
   std::unique_ptr<dragonboat::NodeHost> nh(new dragonboat::NodeHost(nhconfig));
-  status = nh->StartCluster(peers, false, createDragonboatStateMachine, config);
+  status = nh->StartCluster(peers, join, createDragonboatStateMachine, config);
   if (!status.OK()) {
     std::cerr << "failed to StartCluster: " << status.Code() << std::endl;
     return -1;
@@ -69,7 +92,7 @@ int main(int argc, char **argv, char **env)
           if (rs.OK()) {
             auto c = result.Data();
             std::cout << "count: " << *reinterpret_cast<const int *>(c)
-                      << std::endl;
+              << std::endl;
           }
         } else {
           count++;
@@ -94,7 +117,7 @@ int main(int argc, char **argv, char **env)
     status = nh->SyncPropose(session.get(), buf, timeout, &result);
     if (!status.OK()) {
       std::cerr << "failed to make proposal: " << message << ", error code: "
-                << status.Code() << std::endl;
+        << status.Code() << std::endl;
     }
   }
   readThread.join();
