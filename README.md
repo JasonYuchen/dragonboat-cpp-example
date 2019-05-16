@@ -9,6 +9,7 @@ The original repo of dragonboat examples can be found [here](https://github.com/
 Details can be found in each folder.
 
 1. helloworld
+2. multi-group(in progress)
 
 ## Prerequisite
 
