@@ -4,6 +4,7 @@
 #include <memory>
 #include <atomic>
 #include <thread>
+#include <algorithm>
 #include "dragonboat/dragonboat.h"
 #include "statemachine.h"
 
@@ -14,6 +15,8 @@ constexpr char addresses[3][16] = {
   "localhost:63002",
   "localhost:63003",
 };
+
+std::vector<std::string> split(const std::string &cmd, const char &delim = ' ');
 
 int main(int argc, char **argv, char **env)
 {
@@ -92,7 +95,7 @@ int main(int argc, char **argv, char **env)
           if (rs.OK()) {
             auto c = result.Data();
             std::cout << "count: " << *reinterpret_cast<const int *>(c)
-              << std::endl;
+                      << std::endl;
           }
         } else {
           count++;
@@ -105,22 +108,51 @@ int main(int argc, char **argv, char **env)
     });
   std::unique_ptr<dragonboat::Session> session(
     nh->GetNoOPSession(defaultClusterID));
+  auto statusAssert = [](const std::string &desc, dragonboat::Status &s)
+  {
+    if (!s.OK()) {
+      std::cerr << desc << " failed, error code: " << s.Code() << std::endl;
+    }
+  };
   for (std::string message; std::getline(std::cin, message);) {
-    if (message == "exit") {
+    auto parts = split(message);
+    if (parts[0] == "exit") {
       readyToExit = true;
       break;
-    }
-    dragonboat::UpdateResult result;
-    dragonboat::Buffer buf(
-      reinterpret_cast<const dragonboat::Byte *>(message.c_str()),
-      message.size());
-    status = nh->SyncPropose(session.get(), buf, timeout, &result);
-    if (!status.OK()) {
-      std::cerr << "failed to make proposal: " << message << ", error code: "
-        << status.Code() << std::endl;
+    } else if (parts[0] == "add") {
+      auto addr = parts[1];
+      auto id = std::stoi(parts[2]);
+      status = nh->AddNode(defaultClusterID, id, addr, timeout);
+      statusAssert("Add node " + parts[1], status);
+    } else if (parts[0] == "remove") {
+      auto id = std::stoi(parts[1]);
+      status = nh->RemoveNode(defaultClusterID, id, timeout);
+      statusAssert("Remove node " + parts[1], status);
+    } else {
+      dragonboat::UpdateResult result;
+      dragonboat::Buffer buf(
+        reinterpret_cast<const dragonboat::Byte *>(parts[0].c_str()),
+        parts[0].size());
+      status = nh->SyncPropose(session.get(), buf, timeout, &result);
+      statusAssert("Proposal " + parts[0], status);
     }
   }
   readThread.join();
   nh->Stop();
   return 0;
+}
+
+std::vector<std::string> split(const std::string &cmd, const char &delim)
+{
+  std::vector<std::string> parts(1);
+  std::for_each(
+    cmd.cbegin(), cmd.cend(), [&parts, &delim](const char &ch)
+    {
+      if (ch == delim) {
+        parts.emplace_back();
+      } else {
+        parts.back().push_back(ch);
+      }
+    });
+  return parts;
 }
