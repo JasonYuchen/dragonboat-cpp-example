@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "dragonboat/dragonboat.h"
 #include "statemachine.h"
+#include "utils.h"
 
 constexpr uint64_t defaultClusterID = 128;
 
@@ -16,7 +17,6 @@ constexpr char addresses[3][16] = {
   "localhost:63003",
 };
 
-std::vector<std::string> split(const std::string &cmd, const char &delim = ' ');
 
 int main(int argc, char **argv, char **env)
 {
@@ -140,19 +140,4 @@ int main(int argc, char **argv, char **env)
   readThread.join();
   nh->Stop();
   return 0;
-}
-
-std::vector<std::string> split(const std::string &cmd, const char &delim)
-{
-  std::vector<std::string> parts(1);
-  std::for_each(
-    cmd.cbegin(), cmd.cend(), [&parts, &delim](const char &ch)
-    {
-      if (ch == delim) {
-        parts.emplace_back();
-      } else {
-        parts.back().push_back(ch);
-      }
-    });
-  return parts;
 }
