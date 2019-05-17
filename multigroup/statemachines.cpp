@@ -65,6 +65,7 @@ SnapshotResult KVStoreStateMachine::saveSnapshot(
   r.error = SNAPSHOT_OK;
   r.size = 0;
   std::string ss;
+  ss.append(std::to_string(update_count_)).append("\n");
   std::for_each(
     kvstore_.cbegin(),
     kvstore_.cend(),
@@ -93,14 +94,31 @@ int KVStoreStateMachine::recoverFromSnapshot(
   const std::vector<dragonboat::SnapshotFile> &files,
   const dragonboat::DoneChan &done) noexcept
 {
-//  TODO
-//  dragonboat::IOResult ret;
-//  dragonboat::Byte data[sizeof(int)];
-//  ret = reader->Read(data, sizeof(int));
-//  if (ret.size != sizeof(int)) {
-//    return FAILED_TO_RECOVER_FROM_SNAPSHOT;
-//  }
-//  std::memcpy(&update_count_, data, sizeof(int));
+  assert(kvstore_.empty());
+  assert(update_count_ == 0);
+  constexpr size_t BUF_SIZE = 4096;
+  dragonboat::IOResult ret;
+  dragonboat::Byte data[BUF_SIZE];
+  std::stringstream ss;
+  while (true) {
+    ret = reader->Read(data, BUF_SIZE);
+    if (ret.size <= 0) {
+      break;
+    }
+    ss.write(reinterpret_cast<const char *>(data), ret.size);
+  }
+  if (ret.size < 0) {
+    return FAILED_TO_RECOVER_FROM_SNAPSHOT;
+  } else if (ret.size == 0) {
+    std::string count;
+    ss >> count;
+    update_count_ = std::stoi(count);
+    std::string key;
+    std::string val;
+    while (ss >> key >> val) {
+      kvstore_[key] = val;
+    }
+  }
   return SNAPSHOT_OK;
 }
 
