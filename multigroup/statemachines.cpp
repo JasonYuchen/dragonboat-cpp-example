@@ -6,6 +6,7 @@
 #include <cstring>
 #include <sstream>
 #include <cassert>
+#include <algorithm>
 #include "statemachines.h"
 #include "utils.h"
 
@@ -60,18 +61,30 @@ SnapshotResult KVStoreStateMachine::saveSnapshot(
   const dragonboat::DoneChan &done) const noexcept
 {
   SnapshotResult r;
-//  TODO
-//  dragonboat::IOResult ret;
-//  r.error = SNAPSHOT_OK;
-//  r.size = 0;
-//  ret = writer->Write(
-//    reinterpret_cast<const dragonboat::Byte *>(&update_count_),
-//    sizeof(int));
-//  if (ret.size != sizeof(int)) {
-//    r.error = FAILED_TO_SAVE_SNAPSHOT;
-//    return r;
-//  }
-//  r.size = sizeof(int);
+  dragonboat::IOResult ret;
+  r.error = SNAPSHOT_OK;
+  r.size = 0;
+  std::string ss;
+  std::for_each(
+    kvstore_.cbegin(),
+    kvstore_.cend(),
+    [&ss](const std::pair<const std::string, std::string> &kv)
+    {
+      ss.append(kv.first).append(" ").append(kv.second).append("\n");
+    });
+  if (done.Closed()) {
+    r.error = SNAPSHOT_STOPPED;
+    return r;
+  } else {
+    ret = writer->Write(
+      reinterpret_cast<const dragonboat::Byte *>(ss.data()),
+      ss.size());
+    if (ret.size != ss.size()) {
+      r.error = FAILED_TO_SAVE_SNAPSHOT;
+      return r;
+    }
+  }
+  r.size = ss.size();
   return r;
 }
 
