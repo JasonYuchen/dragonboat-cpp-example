@@ -9,7 +9,11 @@ The original repo of dragonboat examples can be found [here](https://github.com/
 Details can be found in each folder.
 
 1. helloworld
-2. multi-group(in progress)
+2. multi-group
+3. *concurrent statemachine
+4. *on-disk statemachine
+
+* both C++ binding and examples are in progress, issues are welcome both here and [dragonboat](https://github.com/lni/dragonboat)
 
 ## Prerequisite
 
@@ -31,13 +35,13 @@ make
 Start three instances on the same machine in three different terminals:
 
 ```shell
-./dragonboat_cpp_example 1
+./dragonboat_cpp_example -nodeid 1
 ```
 
 ```shell
-./dragonboat_cpp_example 2
+./dragonboat_cpp_example -nodeid 2
 ```
 
 ```shell
-./dragonboat_cpp_example 3
+./dragonboat_cpp_example -nodeid 3
 ```
