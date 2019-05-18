@@ -14,6 +14,7 @@ Details can be found in each folder.
 4. *on-disk statemachine
 
 * both C++ binding and examples are in progress, issues are welcome both here and [dragonboat](https://github.com/lni/dragonboat)
+* we also have a plan to implement a Python binding
 
 ## Prerequisite
 
@@ -21,7 +22,10 @@ Details can be found in each folder.
 - cmake
 - dragonboat C++ binding
 
-Instructions can be found [here](https://github.com/lni/dragonboat)
+Instructions can be found [here](https://github.com/lni/dragonboat). 
+
+The dragonboat C++ binding is based on CGo, thus its performance is worse than the original Go interface. Please refer to [Adventures in Cgo Performance](https://about.sourcegraph.com/go/gophercon-2018-adventures-in-cgo-performance) for more details.
+
 
 ## Build
 
