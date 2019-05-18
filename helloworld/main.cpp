@@ -49,7 +49,7 @@ int main(int argc, char **argv, char **env)
     std::cerr << "undefined node address" << std::endl;
     return -1;
   } else if (nodeID <= 3) {
-    address = addresses[nodeID + 1];
+    address = addresses[nodeID - 1];
   }
 
   dragonboat::Config config(defaultClusterID, nodeID);
