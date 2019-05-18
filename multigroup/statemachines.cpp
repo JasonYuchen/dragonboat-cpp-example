@@ -37,7 +37,21 @@ LookupResult KVStoreStateMachine::lookup(
   std::string query(reinterpret_cast<const char *>(data), size);
   std::string result;
   if (query == "display") {
-    // TODO
+    std::stringstream ss;
+    ss << "{ ";
+    std::for_each(
+      kvstore_.cbegin(),
+      kvstore_.cend(),
+      [&ss](const std::pair<const std::string, std::string> &item)
+      {
+        ss << "\"" << item.first << "\":\"" << item.second << "\", ";
+      });
+    ss << "}";
+    auto str = ss.str();
+    r.result = new char[str.size()];
+    r.size = str.size();
+    std::memcpy(r.result, str.data(), r.size);
+    return r;
   }
   auto it = kvstore_.find(query);
   if (it == kvstore_.end()) {

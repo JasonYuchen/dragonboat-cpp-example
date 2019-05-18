@@ -9,8 +9,8 @@
 #include "statemachines.h"
 #include "utils.h"
 
-constexpr uint64_t ClusterID1 = 101;
-constexpr uint64_t ClusterID2 = 102;
+constexpr uint64_t ClusterID1 = 1;
+constexpr uint64_t ClusterID2 = 2;
 
 constexpr char addresses[3][16] = {
   "localhost:63001",
@@ -41,7 +41,7 @@ int main(int argc, char **argv, char **env)
     std::cerr << "invalid node id: " << nodeID << std::endl;
     return -1;
   } else if (nodeID <= 3) {
-    address = addresses[nodeID + 1];
+    address = addresses[nodeID - 1];
   }
 
   dragonboat::Config config(ClusterID1, nodeID);
@@ -82,7 +82,6 @@ int main(int argc, char **argv, char **env)
   // set key value
   // key
   // display clusterID
-  // TODO: TEST
   auto timeout = dragonboat::Milliseconds(3000);
   for (std::string message; std::getline(std::cin, message);) {
     auto parts = split(message);
@@ -104,7 +103,7 @@ int main(int argc, char **argv, char **env)
     dragonboat::Buffer result(1024);
     switch (parts.size()) {
       case 1: {
-        auto clusterID = std::hash<std::string>()(parts[0]) % 2;
+        auto clusterID = std::hash<std::string>()(parts[0]) % 2 + ClusterID1;
         dragonboat::Buffer query(
           reinterpret_cast<const dragonboat::Byte *>(parts[0].c_str()),
           parts[0].size());
@@ -120,7 +119,7 @@ int main(int argc, char **argv, char **env)
         break;
       }
       case 3: {
-        auto clusterID = std::hash<std::string>()(parts[1]) % 2;
+        auto clusterID = std::hash<std::string>()(parts[1]) % 2 + ClusterID1;
         dragonboat::Buffer query(
           reinterpret_cast<const dragonboat::Byte *>(message.c_str()),
           message.size());
@@ -132,9 +131,10 @@ int main(int argc, char **argv, char **env)
       }
       default:std::cerr << "error" << std::endl;
     }
-    if (!status.OK()) {
-      std::cerr << message << " failed, error code: " << status.Code()
-                << std::endl;
+    if (status.OK() && result.Len() != 0) {
+      std::cout << result.Data() << std::endl;
+    } else if (!status.OK()) {
+      std::cerr << "error code: " << status.Code() << std::endl;
     }
   }
   nh->Stop();
