@@ -36,6 +36,9 @@ LookupResult KVStoreStateMachine::lookup(
   LookupResult r;
   std::string query(reinterpret_cast<const char *>(data), size);
   std::string result;
+  if (query == "display") {
+    // TODO
+  }
   auto it = kvstore_.find(query);
   if (it == kvstore_.end()) {
     char nf[] = "not found";
