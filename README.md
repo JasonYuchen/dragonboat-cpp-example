@@ -30,7 +30,7 @@ The dragonboat C++ binding is based on CGo, thus its performance is worse than t
 ## Build
 
 ```shell
-cmake -DEXAMPLE=helloworld
+cmake . -DEXAMPLE=helloworld
 make
 ```
 
