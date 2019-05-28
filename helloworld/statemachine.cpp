@@ -82,11 +82,9 @@ void HelloWorldStateMachine::freeLookupResult(LookupResult r) noexcept
   delete[] r.result;
 }
 
-CPPStateMachine *createDragonboatStateMachine(
+dragonboat::StateMachine *createDragonboatStateMachine(
   uint64_t clusterID,
   uint64_t nodeID)
 {
-  auto cppsm = new CPPStateMachine;
-  cppsm->sm = new HelloWorldStateMachine(clusterID, nodeID);
-  return cppsm;
+  return new HelloWorldStateMachine(clusterID, nodeID);
 }

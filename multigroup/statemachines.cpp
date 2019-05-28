@@ -154,11 +154,9 @@ void KVStoreStateMachine::freeLookupResult(LookupResult r) noexcept
   delete[] r.result;
 }
 
-CPPStateMachine *createDragonboatStateMachine(
+dragonboat::StateMachine *createDragonboatStateMachine(
   uint64_t clusterID,
   uint64_t nodeID)
 {
-  auto cppsm = new CPPStateMachine;
-  cppsm->sm = new KVStoreStateMachine(clusterID, nodeID);
-  return cppsm;
+  return new KVStoreStateMachine(clusterID, nodeID);
 }

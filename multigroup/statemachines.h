@@ -46,7 +46,7 @@ class KVStoreStateMachine : public dragonboat::StateMachine {
   std::unordered_map<std::string, std::string> kvstore_;
 };
 
-CPPStateMachine *createDragonboatStateMachine(
+dragonboat::StateMachine *createDragonboatStateMachine(
   uint64_t clusterID,
   uint64_t nodeID);
 

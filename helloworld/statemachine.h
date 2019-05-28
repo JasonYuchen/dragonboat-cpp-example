@@ -44,7 +44,7 @@ class HelloWorldStateMachine : public dragonboat::StateMachine {
   int update_count_;
 };
 
-CPPStateMachine *createDragonboatStateMachine(
+dragonboat::StateMachine *createDragonboatStateMachine(
   uint64_t clusterID,
   uint64_t nodeID);
 
