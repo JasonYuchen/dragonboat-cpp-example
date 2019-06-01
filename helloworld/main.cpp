@@ -18,6 +18,8 @@
 #include <memory>
 #include <atomic>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 #include <algorithm>
 #include "dragonboat/dragonboat.h"
 #include "statemachine.h"
@@ -29,6 +31,32 @@ constexpr char addresses[3][16] = {
   "localhost:63001",
   "localhost:63002",
   "localhost:63003",
+};
+
+class ProposeComplete : public dragonboat::Event {
+ public:
+  ProposeComplete() noexcept : set_(false)
+  {}
+  void Wait() noexcept
+  {
+    std::unique_lock<std::mutex> lk(mtx_);
+    while (!set_) {
+      cv_.wait(
+        lk, [this]()
+        { return set_; });
+    }
+  }
+ protected:
+  void set() noexcept override
+  {
+    std::unique_lock<std::mutex> lk(mtx_);
+    set_ = true;
+    cv_.notify_all();
+  }
+ private:
+  bool set_;
+  std::condition_variable cv_;
+  std::mutex mtx_;
 };
 
 int main(int argc, char **argv, char **env)
@@ -146,8 +174,21 @@ int main(int argc, char **argv, char **env)
       dragonboat::Buffer buf(
         reinterpret_cast<const dragonboat::Byte *>(parts[0].c_str()),
         parts[0].size());
-      status = nh->SyncPropose(session.get(), buf, timeout, &result);
-      statusAssert("Proposal " + parts[0], status);
+      if (parts[0].size() % 2) {
+        status = nh->SyncPropose(session.get(), buf, timeout, &result);
+        statusAssert("SyncPropose " + parts[0], status);
+      } else {
+        ProposeComplete pc;
+        status = nh->Propose(session.get(), buf, timeout, &pc);
+        statusAssert("AsyncPropose " + parts[0], status);
+        pc.Wait();
+        result = pc.Get().result;
+        dragonboat::ResultCode resultCode = pc.Get().code;
+        std::cout
+          << "Result for AsyncPropose: "
+          << static_cast<int>(resultCode)
+          << std::endl;
+      }
     }
   }
   readThread.join();
