@@ -18,10 +18,10 @@
 #include "dragonboat/statemachine.h"
 #include <vector>
 
-class HelloWorldStateMachine : public dragonboat::StateMachine {
+class HelloWorldStateMachine : public dragonboat::RegularStateMachine {
  public:
   HelloWorldStateMachine(uint64_t clusterID, uint64_t nodeID) noexcept
-    : StateMachine(clusterID, nodeID), update_count_(0)
+    : RegularStateMachine(clusterID, nodeID), update_count_(0)
   {}
   ~HelloWorldStateMachine() noexcept override = default;
  protected:
@@ -44,7 +44,7 @@ class HelloWorldStateMachine : public dragonboat::StateMachine {
   int update_count_;
 };
 
-dragonboat::StateMachine *createDragonboatStateMachine(
+dragonboat::RegularStateMachine *createDragonboatStateMachine(
   uint64_t clusterID,
   uint64_t nodeID);
 

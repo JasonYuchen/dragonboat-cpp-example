@@ -89,7 +89,7 @@ SnapshotResult KVStoreStateMachine::saveSnapshot(
 {
   SnapshotResult r;
   dragonboat::IOResult ret;
-  r.error = SNAPSHOT_OK;
+  r.errcode = SNAPSHOT_OK;
   r.size = 0;
   std::string ss;
   ss.append(std::to_string(update_count_)).append("\n");
@@ -101,14 +101,14 @@ SnapshotResult KVStoreStateMachine::saveSnapshot(
       ss.append(kv.first).append(" ").append(kv.second).append("\n");
     });
   if (done.Closed()) {
-    r.error = SNAPSHOT_STOPPED;
+    r.errcode = SNAPSHOT_STOPPED;
     return r;
   } else {
     ret = writer->Write(
       reinterpret_cast<const dragonboat::Byte *>(ss.data()),
       ss.size());
     if (ret.size != ss.size()) {
-      r.error = FAILED_TO_SAVE_SNAPSHOT;
+      r.errcode = FAILED_TO_SAVE_SNAPSHOT;
       return r;
     }
   }
@@ -154,7 +154,7 @@ void KVStoreStateMachine::freeLookupResult(LookupResult r) noexcept
   delete[] r.result;
 }
 
-dragonboat::StateMachine *createDragonboatStateMachine(
+dragonboat::RegularStateMachine *createDragonboatStateMachine(
   uint64_t clusterID,
   uint64_t nodeID)
 {

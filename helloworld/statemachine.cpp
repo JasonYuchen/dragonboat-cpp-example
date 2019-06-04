@@ -49,13 +49,13 @@ SnapshotResult HelloWorldStateMachine::saveSnapshot(
 {
   SnapshotResult r;
   dragonboat::IOResult ret;
-  r.error = SNAPSHOT_OK;
+  r.errcode = SNAPSHOT_OK;
   r.size = 0;
   ret = writer->Write(
     reinterpret_cast<const dragonboat::Byte *>(&update_count_),
     sizeof(int));
   if (ret.size != sizeof(int)) {
-    r.error = FAILED_TO_SAVE_SNAPSHOT;
+    r.errcode = FAILED_TO_SAVE_SNAPSHOT;
     return r;
   }
   r.size = sizeof(int);
@@ -82,7 +82,7 @@ void HelloWorldStateMachine::freeLookupResult(LookupResult r) noexcept
   delete[] r.result;
 }
 
-dragonboat::StateMachine *createDragonboatStateMachine(
+dragonboat::RegularStateMachine *createDragonboatStateMachine(
   uint64_t clusterID,
   uint64_t nodeID)
 {

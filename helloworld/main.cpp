@@ -112,7 +112,6 @@ int main(int argc, char **argv, char **env)
   dragonboat::NodeHostConfig nhconfig(path.str(), path.str());
   nhconfig.RTTMillisecond = dragonboat::Milliseconds(200);
   nhconfig.RaftAddress = address;
-  nhconfig.APIAddress = "";
 
   dragonboat::Status status;
   std::unique_ptr<dragonboat::NodeHost> nh(new dragonboat::NodeHost(nhconfig));

@@ -19,10 +19,10 @@
 #include <vector>
 #include <unordered_map>
 
-class KVStoreStateMachine : public dragonboat::StateMachine {
+class KVStoreStateMachine : public dragonboat::RegularStateMachine {
  public:
   KVStoreStateMachine(uint64_t clusterID, uint64_t nodeID) noexcept
-    : StateMachine(clusterID, nodeID), update_count_(0), kvstore_()
+    : RegularStateMachine(clusterID, nodeID), update_count_(0), kvstore_()
   {}
   ~KVStoreStateMachine() noexcept override = default;
  protected:
@@ -46,7 +46,7 @@ class KVStoreStateMachine : public dragonboat::StateMachine {
   std::unordered_map<std::string, std::string> kvstore_;
 };
 
-dragonboat::StateMachine *createDragonboatStateMachine(
+dragonboat::RegularStateMachine *createDragonboatStateMachine(
   uint64_t clusterID,
   uint64_t nodeID);
 
