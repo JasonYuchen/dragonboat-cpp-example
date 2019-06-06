@@ -16,6 +16,17 @@ Details can be found in each folder.
 * both C++ binding and examples are in progress, issues are welcome both here and [dragonboat](https://github.com/lni/dragonboat)
 * we also have a plan to implement a Python binding
 
+## c++ binding v3.0 beta 
+
+1. support all new features in nodehost.go with both sync/async version
+2. support concurrent statemachine
+3. support on-disk statemachine
+4. clients can specify both .so file name and factory name when starting cluster from a plugin
+5. `StartCluster` now accepts a functional factory which allows caller to parse both C-style functions and lambda expressions
+
+* v3.0 is almost completed and has been actively tested
+* examples will be updated once v3.0 is ready
+
 ## Prerequisite
 
 - GCC with C++11 support
