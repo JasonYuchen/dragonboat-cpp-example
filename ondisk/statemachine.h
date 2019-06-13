@@ -12,18 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DRAGONBOAT_CPP_EXAMPLE_ONDISK_STATEMACHINES_H_
-#define DRAGONBOAT_CPP_EXAMPLE_ONDISK_STATEMACHINES_H_
+#ifndef DRAGONBOAT_CPP_EXAMPLE_ONDISK_STATEMACHINE_H_
+#define DRAGONBOAT_CPP_EXAMPLE_ONDISK_STATEMACHINE_H_
 
+#include <mutex>
+#include <rocksdb/db.h>
 #include <dragonboat/statemachine.h>
 
-// TODO: an on-disk sharding kv store backed up by LevelDB/RocksDB
+const std::string appliedIndexKey = "disk_kv_applied_index";
+const std::string testDBDirName = "example-data";
+const std::string currentDBFilename = "current";
+const std::string updatingDBFilename = "current.updating";
+
+struct RocksDB {
+  std::unique_ptr<rocksdb::DB> db_;
+  rocksdb::Options opts_;
+  rocksdb::ReadOptions ro_;
+  rocksdb::WriteOptions wo_;
+  ~RocksDB();
+};
+
+// lookup/saveSnapshot/update/reocoverFromSnapshot can be concurrently invoked
+// update/prepareSnapshot can not be concurrently invoked
 class DiskKV : public dragonboat::OnDiskStateMachine {
  public:
-  DiskKV(uint64_t clusterID, uint64_t nodeID) noexcept
-    : dragonboat::OnDiskStateMachine(clusterID, nodeID)
-  {}
-  ~DiskKV() override = default;
+  DiskKV(uint64_t clusterID, uint64_t nodeID) noexcept;
+  ~DiskKV() override;
  protected:
   OpenResult open(const dragonboat::DoneChan &done) noexcept override;
   uint64_t update(
@@ -47,7 +61,23 @@ class DiskKV : public dragonboat::OnDiskStateMachine {
   void freePrepareSnapshotResult(PrepareSnapshotResult r) noexcept override;
   void freeLookupResult(LookupResult r) noexcept override;
  private:
+  std::shared_ptr<RocksDB> createDB(std::string dbdir);
+  uint64_t queryAppliedIndex(RocksDB *db) const;
+  static bool isNewRun(std::string dir) noexcept;
+  static std::string getNodeDBDirName(
+    uint64_t clusterID,
+    uint64_t nodeID) noexcept;
+  static std::string getNewRandomDBDirName(std::string dir) noexcept;
+  static void replaceCurrentDBFile(std::string dir);
+  static void saveCurrentDBDirName(std::string dir, std::string dbdir);
+  static std::string getCurrentDBDirName(std::string dir);
+  static void createNodeDataDir(std::string dir);
+  static void cleanupNodeDataDir(std::string dir);
+ private:
   DISALLOW_COPY_MOVE_AND_ASSIGN(DiskKV);
+  mutable std::mutex mtx_;
+  std::shared_ptr<RocksDB> rocks_;
+  uint64_t lastApplied_;
 };
 
-#endif //DRAGONBOAT_CPP_EXAMPLE_ONDISK_STATEMACHINES_H_
+#endif //DRAGONBOAT_CPP_EXAMPLE_ONDISK_STATEMACHINE_H_
