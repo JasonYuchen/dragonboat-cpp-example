@@ -2,6 +2,8 @@
 
 ## About
 
+**This repo shows the basic usages of dragonboat in C++ projects and is not suitable for benchmark**
+
 This repo contains C++ examples for dragonboat.
 
 The original repo of dragonboat examples can be found [here](https://github.com/lni/dragonboat-example)
