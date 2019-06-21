@@ -13,16 +13,17 @@ Details can be found in each folder.
 1. helloworld
 2. multi-group
 3. *concurrent statemachine
-4. *on-disk statemachine
+4. on-disk statemachine
 
 * both C++ binding and examples are in progress, issues are welcome both here and [dragonboat](https://github.com/lni/dragonboat)
+* for more details about v3.0 binding, see [v3.0pr](https://github.com/lni/dragonboat/pull/71)
 * we also have a plan to implement a Python binding
 
 ## c++ binding v3.0 beta 
 
 1. support all new features in nodehost.go with both sync/async version
-2. support concurrent statemachine
-3. support on-disk statemachine
+2. support concurrent & on-disk statemachines with batchedUpdate method
+3. prepareSnapshot & saveSnapshot take/return a ```void*``` to represent an arbitrary type
 4. clients can specify both .so file name and factory name when starting cluster from a plugin
 5. `StartCluster` now accepts a functional factory which allows caller to parse both C-style functions and lambda expressions
 
