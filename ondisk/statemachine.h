@@ -17,7 +17,7 @@
 
 #include <mutex>
 #include <rocksdb/db.h>
-#include <dragonboat/statemachine.h>
+#include <dragonboat/statemachine/ondisk.h>
 
 const std::string appliedIndexKey = "disk_kv_applied_index";
 const std::string testDBDirName = "example-data";
@@ -40,10 +40,8 @@ class DiskKV : public dragonboat::OnDiskStateMachine {
   ~DiskKV() override;
  protected:
   OpenResult open(const dragonboat::DoneChan &done) noexcept override;
-  uint64_t update(
-    const dragonboat::Byte *data,
-    size_t size,
-    uint64_t index) noexcept override;
+  void update(dragonboat::Entry &ent) noexcept override;
+  void batchedUpdate(std::vector<dragonboat::Entry> &ents) noexcept override;
   LookupResult lookup(
     const dragonboat::Byte *data,
     size_t size) const noexcept override;
@@ -51,14 +49,12 @@ class DiskKV : public dragonboat::OnDiskStateMachine {
   uint64_t getHash() const noexcept override;
   PrepareSnapshotResult prepareSnapshot() const noexcept override;
   SnapshotResult saveSnapshot(
-    const dragonboat::Byte *ctx,
-    size_t size,
+    const void *context,
     dragonboat::SnapshotWriter *writer,
     const dragonboat::DoneChan &done) const noexcept override;
   int recoverFromSnapshot(
     dragonboat::SnapshotReader *reader,
     const dragonboat::DoneChan &done) noexcept override;
-  void freePrepareSnapshotResult(PrepareSnapshotResult r) noexcept override;
   void freeLookupResult(LookupResult r) noexcept override;
  private:
   std::shared_ptr<RocksDB> createDB(std::string dbdir);

@@ -66,28 +66,46 @@ OpenResult DiskKV::open(const dragonboat::DoneChan &done) noexcept
   return r;
 }
 
-uint64_t DiskKV::update(
-  const dragonboat::Byte *data,
-  size_t size,
-  uint64_t index) noexcept
+void DiskKV::update(dragonboat::Entry &ent) noexcept
 {
   std::shared_ptr<RocksDB> rocks;
   {
     std::lock_guard<std::mutex> guard(mtx_);
     rocks = rocks_;
   }
-  std::stringstream ss({reinterpret_cast<const char *>(data), size});
+  std::stringstream ss({reinterpret_cast<const char *>(ent.cmd), ent.cmdLen});
   std::string key, value;
   ss >> key >> value;
   auto wb = rocksdb::WriteBatch();
   wb.Put(key, value);
-  wb.Put(appliedIndexKey, std::to_string(index));
+  wb.Put(appliedIndexKey, std::to_string(ent.index));
   auto s = rocks->db_->Write(rocks->wo_, &wb);
   if (!s.ok()) {
     std::cerr << "failed to update: " << s.ToString() << std::endl;
-    return 0;
   }
-  return index;
+  ent.result = ent.index;
+}
+
+void DiskKV::batchedUpdate(std::vector<dragonboat::Entry> &ents) noexcept
+{
+  std::shared_ptr<RocksDB> rocks;
+  {
+    std::lock_guard<std::mutex> guard(mtx_);
+    rocks = rocks_;
+  }
+  auto wb = rocksdb::WriteBatch();
+  for (auto &ent : ents) {
+    std::stringstream ss({reinterpret_cast<const char *>(ent.cmd), ent.cmdLen});
+    std::string key, value;
+    ss >> key >> value;
+    wb.Put(key, value);
+    ent.result = ent.index;
+  }
+  wb.Put(appliedIndexKey, std::to_string(ents.back().index));
+  auto s = rocks->db_->Write(rocks->wo_, &wb);
+  if (!s.ok()) {
+    std::cerr << "failed to update: " << s.ToString() << std::endl;
+  }
 }
 
 LookupResult DiskKV::lookup(
@@ -141,19 +159,15 @@ PrepareSnapshotResult DiskKV::prepareSnapshot() const noexcept
     std::lock_guard<std::mutex> guard(mtx_);
     rocks = rocks_;
   }
-  auto snapshot = rocks->db_->GetSnapshot();
+  auto snapshotptr = rocks->db_->GetSnapshot();
   PrepareSnapshotResult r;
-  r.result = new char[sizeof(snapshot)];
-  // FIXME: how to return the rocks?
-  memcpy(r.result, &snapshot, sizeof(snapshot));
-  r.size = sizeof(snapshot);
+  r.result = (void *)snapshotptr;
   r.errcode = SNAPSHOT_OK;
   return r;
 }
 
 SnapshotResult DiskKV::saveSnapshot(
-  const dragonboat::Byte *ctx,
-  size_t size,
+  const void *context,
   dragonboat::SnapshotWriter *writer,
   const dragonboat::DoneChan &done) const noexcept
 {
@@ -164,9 +178,9 @@ SnapshotResult DiskKV::saveSnapshot(
   }
   SnapshotResult r;
   r.size = 0;
-  auto snapshot = reinterpret_cast<const rocksdb::Snapshot *>(ctx);
+  auto snapshotptr = reinterpret_cast<const rocksdb::Snapshot *>(context);
   auto ro = rocksdb::ReadOptions();
-  ro.snapshot = snapshot;
+  ro.snapshot = snapshotptr;
   rocksdb::Iterator *iter = rocks->db_->NewIterator(ro);
   uint64_t count = 0;
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
@@ -197,7 +211,7 @@ SnapshotResult DiskKV::saveSnapshot(
   }
   r.errcode = SNAPSHOT_OK;
   delete iter;
-  rocks->db_->ReleaseSnapshot(snapshot);
+  rocks->db_->ReleaseSnapshot(snapshotptr);
   return r;
 }
 
@@ -254,11 +268,6 @@ int DiskKV::recoverFromSnapshot(
   }
   zz::os::remove_all(oldDirName);
   return SNAPSHOT_OK;
-}
-
-void DiskKV::freePrepareSnapshotResult(PrepareSnapshotResult r) noexcept
-{
-  delete[] r.result;
 }
 
 void DiskKV::freeLookupResult(LookupResult r) noexcept
