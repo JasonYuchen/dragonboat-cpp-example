@@ -15,7 +15,7 @@
 #ifndef DRAGONBOAT_CPP_EXAMPLE_STATEMACHINE_H
 #define DRAGONBOAT_CPP_EXAMPLE_STATEMACHINE_H
 
-#include "dragonboat/statemachine.h"
+#include "dragonboat/statemachine/regular.h"
 #include <vector>
 
 class HelloWorldStateMachine : public dragonboat::RegularStateMachine {
@@ -25,7 +25,8 @@ class HelloWorldStateMachine : public dragonboat::RegularStateMachine {
   {}
   ~HelloWorldStateMachine() noexcept override = default;
  protected:
-  uint64_t update(const dragonboat::Byte *data, size_t size) noexcept override;
+  void update(dragonboat::Entry &ent) noexcept override;
+  void batchedUpdate(std::vector<dragonboat::Entry> &ents) noexcept override;
   LookupResult lookup(
     const dragonboat::Byte *data,
     size_t size) const noexcept override;

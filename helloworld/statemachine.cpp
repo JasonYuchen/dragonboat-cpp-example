@@ -16,14 +16,20 @@
 #include <cstring>
 #include "statemachine.h"
 
-uint64_t HelloWorldStateMachine::update(
-  const dragonboat::Byte *data,
-  size_t size) noexcept
+void HelloWorldStateMachine::update(dragonboat::Entry &ent) noexcept
 {
-  auto c = reinterpret_cast<const char *>(data);
-  std::cout << "message: " << std::string(c, size) << std::endl;
+  auto c = reinterpret_cast<const char *>(ent.cmd);
+  std::cout << "message: " << std::string(c, ent.cmdLen) << std::endl;
   update_count_++;
-  return update_count_;
+  ent.result = update_count_;
+}
+
+void HelloWorldStateMachine::batchedUpdate(
+  std::vector<dragonboat::Entry> &ents) noexcept
+{
+  for (auto &ent : ents) {
+    update(ent);
+  }
 }
 
 LookupResult HelloWorldStateMachine::lookup(

@@ -182,7 +182,7 @@ int main(int argc, char **argv, char **env)
         statusAssert("AsyncPropose " + parts[0], status);
         pc.Wait();
         result = pc.Get().result;
-        dragonboat::ResultCode resultCode = pc.Get().code;
+        ResultCode resultCode = pc.Get().code;
         std::cout
           << "Result for AsyncPropose: "
           << static_cast<int>(resultCode)

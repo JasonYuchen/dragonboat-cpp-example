@@ -20,11 +20,9 @@
 #include "statemachines.h"
 #include "utils.h"
 
-uint64_t KVStoreStateMachine::update(
-  const dragonboat::Byte *data,
-  size_t size) noexcept
+void KVStoreStateMachine::update(dragonboat::Entry &ent) noexcept
 {
-  std::string query(reinterpret_cast<const char *>(data), size);
+  std::string query(reinterpret_cast<const char *>(ent.cmd), ent.cmdLen);
   auto parts = split(query);
   if (parts[0] == "set") {
     kvstore_[parts[1]] = parts[2];
@@ -33,10 +31,18 @@ uint64_t KVStoreStateMachine::update(
   } else if (parts[0] == "clr") {
     kvstore_.clear();
   } else {
-    return update_count_;
+    ent.result = update_count_;
   }
   update_count_++;
-  return update_count_;
+  ent.result = update_count_;
+}
+
+void KVStoreStateMachine::batchedUpdate(
+  std::vector<dragonboat::Entry> &ents) noexcept
+{
+  for (auto &ent : ents) {
+    update(ent);
+  }
 }
 
 LookupResult KVStoreStateMachine::lookup(
