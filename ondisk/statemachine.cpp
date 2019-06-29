@@ -66,26 +66,6 @@ OpenResult DiskKV::open(const dragonboat::DoneChan &done) noexcept
   return r;
 }
 
-void DiskKV::update(dragonboat::Entry &ent) noexcept
-{
-  std::shared_ptr<RocksDB> rocks;
-  {
-    std::lock_guard<std::mutex> guard(mtx_);
-    rocks = rocks_;
-  }
-  std::stringstream ss({reinterpret_cast<const char *>(ent.cmd), ent.cmdLen});
-  std::string key, value;
-  ss >> key >> value;
-  auto wb = rocksdb::WriteBatch();
-  wb.Put(key, value);
-  wb.Put(appliedIndexKey, std::to_string(ent.index));
-  auto s = rocks->db_->Write(rocks->wo_, &wb);
-  if (!s.ok()) {
-    std::cerr << "failed to update: " << s.ToString() << std::endl;
-  }
-  ent.result = ent.index;
-}
-
 void DiskKV::batchedUpdate(std::vector<dragonboat::Entry> &ents) noexcept
 {
   std::shared_ptr<RocksDB> rocks;

@@ -37,14 +37,6 @@ void KVStoreStateMachine::update(dragonboat::Entry &ent) noexcept
   ent.result = update_count_;
 }
 
-void KVStoreStateMachine::batchedUpdate(
-  std::vector<dragonboat::Entry> &ents) noexcept
-{
-  for (auto &ent : ents) {
-    update(ent);
-  }
-}
-
 LookupResult KVStoreStateMachine::lookup(
   const dragonboat::Byte *data,
   size_t size) const noexcept

@@ -27,7 +27,6 @@ class KVStoreStateMachine : public dragonboat::RegularStateMachine {
   ~KVStoreStateMachine() noexcept override = default;
  protected:
   void update(dragonboat::Entry &ent) noexcept override;
-  void batchedUpdate(std::vector<dragonboat::Entry> &ents) noexcept override;
   LookupResult lookup(
     const dragonboat::Byte *data,
     size_t size) const noexcept override;

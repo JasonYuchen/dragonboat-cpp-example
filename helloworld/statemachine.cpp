@@ -24,14 +24,6 @@ void HelloWorldStateMachine::update(dragonboat::Entry &ent) noexcept
   ent.result = update_count_;
 }
 
-void HelloWorldStateMachine::batchedUpdate(
-  std::vector<dragonboat::Entry> &ents) noexcept
-{
-  for (auto &ent : ents) {
-    update(ent);
-  }
-}
-
 LookupResult HelloWorldStateMachine::lookup(
   const dragonboat::Byte *data,
   size_t size) const noexcept

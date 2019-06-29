@@ -40,7 +40,6 @@ class DiskKV : public dragonboat::OnDiskStateMachine {
   ~DiskKV() override;
  protected:
   OpenResult open(const dragonboat::DoneChan &done) noexcept override;
-  void update(dragonboat::Entry &ent) noexcept override;
   void batchedUpdate(std::vector<dragonboat::Entry> &ents) noexcept override;
   LookupResult lookup(
     const dragonboat::Byte *data,
