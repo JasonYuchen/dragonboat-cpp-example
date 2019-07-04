@@ -11,15 +11,13 @@ The original repo of dragonboat examples can be found [here](https://github.com/
 Details can be found in each folder.
 
 1. helloworld
-2. multi-group
+2. multigroup 
 3. *concurrent statemachine
-4. on-disk statemachine
+4. ondisk
 
-* both C++ binding and examples are in progress, issues are welcome both here and [dragonboat](https://github.com/lni/dragonboat)
-* for more details about v3.0 binding, see [v3.0pr](https://github.com/lni/dragonboat/pull/71)
-* we also have a plan to implement a Python binding
+###  v3.0 binding released
 
-## c++ binding v3.0 beta 
+Please rebuild the binding using the master branch of [dragonboat](https://github.com/lni/dragonboat)
 
 1. support all new features in nodehost.go with both sync/async version
 2. support concurrent & on-disk statemachines with batchedUpdate method
@@ -27,8 +25,10 @@ Details can be found in each folder.
 4. clients can specify both .so file name and factory name when starting cluster from a plugin
 5. `StartCluster` now accepts a functional factory which allows caller to parse both C-style functions and lambda expressions
 
-* v3.0 is almost completed and has been actively tested
-* examples will be updated once v3.0 is ready
+### more
+
+* we also have a plan to implement a Python binding
+* issues are welcome both here and [dragonboat](https://github.com/lni/dragonboat)
 
 ## Prerequisite
 
@@ -39,7 +39,6 @@ Details can be found in each folder.
 Instructions can be found [here](https://github.com/lni/dragonboat). 
 
 The dragonboat C++ binding is based on CGo, thus its performance is worse than the original Go interface. Please refer to [Adventures in Cgo Performance](https://about.sourcegraph.com/go/gophercon-2018-adventures-in-cgo-performance) for more details.
-
 
 ## Build
 
