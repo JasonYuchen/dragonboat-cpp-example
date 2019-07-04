@@ -15,18 +15,18 @@
 #ifndef DRAGONBOAT_CPP_EXAMPLE_MULTIGROUP_STATEMACHINES_H_
 #define DRAGONBOAT_CPP_EXAMPLE_MULTIGROUP_STATEMACHINES_H_
 
-#include "dragonboat/statemachine.h"
+#include "dragonboat/statemachine/regular.h"
 #include <vector>
 #include <unordered_map>
 
-class KVStoreStateMachine : public dragonboat::StateMachine {
+class KVStoreStateMachine : public dragonboat::RegularStateMachine {
  public:
   KVStoreStateMachine(uint64_t clusterID, uint64_t nodeID) noexcept
-    : StateMachine(clusterID, nodeID), update_count_(0), kvstore_()
+    : RegularStateMachine(clusterID, nodeID), update_count_(0), kvstore_()
   {}
   ~KVStoreStateMachine() noexcept override = default;
  protected:
-  uint64_t update(const dragonboat::Byte *data, size_t size) noexcept override;
+  void update(dragonboat::Entry &ent) noexcept override;
   LookupResult lookup(
     const dragonboat::Byte *data,
     size_t size) const noexcept override;
@@ -46,7 +46,7 @@ class KVStoreStateMachine : public dragonboat::StateMachine {
   std::unordered_map<std::string, std::string> kvstore_;
 };
 
-dragonboat::StateMachine *createDragonboatStateMachine(
+dragonboat::RegularStateMachine *createDragonboatStateMachine(
   uint64_t clusterID,
   uint64_t nodeID);
 

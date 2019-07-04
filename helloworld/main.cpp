@@ -112,7 +112,6 @@ int main(int argc, char **argv, char **env)
   dragonboat::NodeHostConfig nhconfig(path.str(), path.str());
   nhconfig.RTTMillisecond = dragonboat::Milliseconds(200);
   nhconfig.RaftAddress = address;
-  nhconfig.APIAddress = "";
 
   dragonboat::Status status;
   std::unique_ptr<dragonboat::NodeHost> nh(new dragonboat::NodeHost(nhconfig));
@@ -163,11 +162,11 @@ int main(int argc, char **argv, char **env)
     } else if (parts[0] == "add") {
       auto addr = parts[1];
       auto id = std::stoi(parts[2]);
-      status = nh->AddNode(defaultClusterID, id, addr, timeout);
+      status = nh->SyncRequestAddNode(defaultClusterID, id, addr, timeout);
       statusAssert("Add node " + parts[1], status);
     } else if (parts[0] == "remove") {
       auto id = std::stoi(parts[1]);
-      status = nh->RemoveNode(defaultClusterID, id, timeout);
+      status = nh->SyncRequestDeleteNode(defaultClusterID, id, timeout);
       statusAssert("Remove node " + parts[1], status);
     } else {
       dragonboat::UpdateResult result;
@@ -183,7 +182,7 @@ int main(int argc, char **argv, char **env)
         statusAssert("AsyncPropose " + parts[0], status);
         pc.Wait();
         result = pc.Get().result;
-        dragonboat::ResultCode resultCode = pc.Get().code;
+        ResultCode resultCode = pc.Get().code;
         std::cout
           << "Result for AsyncPropose: "
           << static_cast<int>(resultCode)
