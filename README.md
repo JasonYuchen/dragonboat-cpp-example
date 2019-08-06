@@ -14,6 +14,7 @@ Details can be found in each folder.
 2. multigroup 
 3. *concurrent statemachine
 4. ondisk
+5. *ioservice
 
 ###  v3.0 binding released
 
